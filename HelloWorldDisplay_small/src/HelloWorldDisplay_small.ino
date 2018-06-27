@@ -18,6 +18,12 @@ void setup()
   // start the data retrieval timer
   //   timer.start();
 
+  // fun startup sound
+  for(int i = 30; i < 60; i++) {
+    tone(D0, (i*100), 10);
+    delay(10);
+  }
+
   // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
   display.begin(SSD1306_SWITCHCAPVCC);
 
@@ -65,6 +71,8 @@ void loop()
   display.println("Clock Time: " + current_time);
   display.println("");
   display.println("Uptime: " + String(uptime) + "s");
+  display.println("");
+  display.println("       :D");
 
   display.display();
 
