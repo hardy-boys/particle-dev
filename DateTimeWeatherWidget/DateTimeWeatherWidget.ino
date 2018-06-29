@@ -1,36 +1,11 @@
-
-/***************************************************
-This is an example sketch for the Adafruit 2.2" SPI tft.
-This library works with the Adafruit 2.2" TFT Breakout w/SD card
-----> http://www.adafruit.com/products/1480
-
-Check out the links above for our tutorials and wiring diagrams
-These tfts use SPI to communicate, 4 or 5 pins are required to
-interface (RST is optional)
-Adafruit invests time and resources providing this open source code,
-please support Adafruit and open-source hardware by purchasing
-products from Adafruit!
-
-Written by Limor Fried/Ladyada for Adafruit Industries.
-MIT license, all text above must be included in any redistribution
-****************************************************/
-
-// #include "./Adafruit_mfGFX/Adafruit_mfGFX.h"
 #include "./Adafruit_ILI9341/Adafruit_ILI9341.h"
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(A2, A1, A0);
 
-String current_time;
-bool toggle;
-String format_string;
-String weekday;
-String date;
-unsigned long uptime;
-unsigned long ms = 1000;
-
 //
 // ─── CONTENT POSITIONING ────────────────────────────────────────────────────────
 //
+
 // Time/Date
 #define TIMEDATE_START_V 90
 #define TIMEDATE_START_H 160
@@ -39,7 +14,20 @@ unsigned long ms = 1000;
 #define WEATHER_START_V 90
 #define WEATHER_START_H 36
 
-const unsigned char weather[] = {
+//
+// ─── GLOBAL VARIABLES ───────────────────────────────────────────────────────────
+//
+
+
+String current_time;
+bool toggle;
+String format_string;
+String weekday;
+String date;
+unsigned long uptime;
+unsigned long ms = 1000;
+int blinkLed = D7;
+const unsigned char icon[] = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0,
 		0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x00,
 		0x03, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x60, 0x00, 0x00, 0x06, 0x00,
@@ -60,22 +48,41 @@ const unsigned char weather[] = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-void setup(){// Request time synchronization from the Particle Device Cloud
+//
+// ─── DEVICE SETUP ──────────────────────────────────────────────────────────────────────
+//
+
+void setup() {
+	// Event listener
+	Particle.subscribe("test", myHandler);
+
+	// Setup serial comms for debug
+	Serial.begin();
+	Serial.println("Hello World!");
+
+	// Sync time with particle cloud
 	Particle.syncTime();
-	// Wait until Photon receives time from Particle Device Cloud (or connection to Particle Device Cloud is lost)
 	waitUntil(Particle.syncTimeDone);
 
+	pinMode(blinkLed, OUTPUT);
+
+	// Initial screen setup
 	tft.begin();
 	tft.setRotation(1);
-	titleText();
-	tft.drawBitmap(6, 0, weather, 48, 48, ILI9341_YELLOW);
-	displayWeather();
-	tft.drawFastHLine(0, 50, 320, ILI9341_BLACK);
-	tft.drawFastVLine(60, 0, 50, ILI9341_BLACK);
+	tft.fillScreen(ILI9341_WHITE);
 
+	// Draw top header bar
+	drawHeader();
+
+	displayWeather();
 }
 
+//
+// ─── MAIN LOOP ──────────────────────────────────────────────────────────────────
+//
+
 void loop(void) {
+
 	format_string = "%I:%M %p";
 
 	Time.zone(-5);
@@ -101,22 +108,41 @@ void loop(void) {
 	tft.println(weekday);
 	tft.setCursor(TIMEDATE_START_H, (TIMEDATE_START_V + TIMEDATE_LINE_HEIGHT * 2));
 	tft.println(String(Time.month()) + "/" + String(Time.day()) + "/" + String(Time.year()));
-	tft.setCursor(TIMEDATE_START_H, (TIMEDATE_START_V + TIMEDATE_LINE_HEIGHT * 3));
-	tft.println("Uptime: " + String(uptime) + "s");
-	tft.println("");
 
 	delay(500);
 
 }
 
-void titleText()
+//
+// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+//
+
+void myHandler(const char *event, const char *data)
 {
-	tft.fillScreen(ILI9341_WHITE);
+	Serial.print("Got an event!");
+	Serial.print(event);
+	if (data)
+		Serial.println(data);
+	else
+		Serial.println("NULL");
+	digitalWrite(blinkLed, HIGH);
+	delay(500);
+	digitalWrite(blinkLed, LOW);
+}
+
+void drawHeader()
+{
+	// Don't edit these
   tft.setCursor(96, 12);
   tft.setTextColor(ILI9341_BLACK);
   tft.setTextSize(1);
 	tft.setFont(CALIBRI_24);
+	tft.drawFastHLine(0, 50, 320, ILI9341_BLACK);
+	tft.drawFastVLine(60, 0, 50, ILI9341_BLACK);
+
+	// Edit here
 	tft.println("Time & Weather");
+	tft.drawBitmap(6, 0, icon, 48, 48, ILI9341_YELLOW);
 }
 
 void displayWeather()
