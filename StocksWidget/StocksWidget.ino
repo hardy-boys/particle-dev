@@ -119,6 +119,7 @@ void realtimeHandler(const char *event, const char *data)
 			return;
 		}
 
+		// Update JSON data into our display variables
 		symbol = root["Symbol"].asString();
 		price = root["Price"].asString();
 	}
