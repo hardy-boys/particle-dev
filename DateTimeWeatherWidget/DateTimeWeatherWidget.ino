@@ -1,3 +1,4 @@
+#include "./ArduinoJson-v5.13.2.h"
 #include "./Adafruit_ILI9341/Adafruit_ILI9341.h"
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(A2, A1, A0);
@@ -7,17 +8,23 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(A2, A1, A0);
 //
 
 // Time/Date
-#define TIMEDATE_START_V 90
-#define TIMEDATE_START_H 160
-#define TIMEDATE_LINE_HEIGHT 20
+#define TIMEDATE_START_V 80
+#define TIMEDATE_START_H 180
 // Weather
-#define WEATHER_START_V 90
+#define WEATHER_START_V 80
 #define WEATHER_START_H 36
 
 //
 // ─── GLOBAL VARIABLES ───────────────────────────────────────────────────────────
 //
 
+// Memory pool for JSON object tree.
+StaticJsonBuffer<200> jsonBuffer;
+
+String temperature = "...";
+String weather_desc = "...";
+String humidity = "...";
+String wind = "...";
 
 String current_time;
 bool toggle;
@@ -53,12 +60,15 @@ const unsigned char icon[] = {
 //
 
 void setup() {
-	// Event listener
-	Particle.subscribe("test", myHandler);
-
-	// Setup serial comms for debug
-	Serial.begin();
+	Serial.begin(9600);
+	while (!Serial)
+	{
+		// wait serial port initialization
+	}
 	Serial.println("Hello World!");
+
+	// Event listener
+	Particle.subscribe("openWeather", realtimeHandler);
 
 	// Sync time with particle cloud
 	Particle.syncTime();
@@ -73,8 +83,6 @@ void setup() {
 
 	// Draw top header bar
 	drawHeader();
-
-	displayWeather();
 }
 
 //
@@ -83,7 +91,7 @@ void setup() {
 
 void loop(void) {
 
-	format_string = "%I:%M %p";
+	format_string = "%I:%M   %p";
 
 	Time.zone(-5);
 	if (Time.isDST())
@@ -97,16 +105,18 @@ void loop(void) {
 	current_time = Time.format(Time.now(), format_string);
 	uptime = millis() / ms;
 
-	// render just what changed (time)
-	tft.setFont(CALIBRI_18);
+	displayWeather();
 	tft.setTextSize(1);
 	tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
 	tft.setCursor(TIMEDATE_START_H, TIMEDATE_START_V);
+	tft.setFont(CALIBRI_24);
 	tft.println(current_time);
-	tft.setCursor(TIMEDATE_START_H, (TIMEDATE_START_V + TIMEDATE_LINE_HEIGHT * 1));
+
+	tft.setFont(CALIBRI_18);
+	tft.setCursor(TIMEDATE_START_H, (TIMEDATE_START_V + 26));
 	weekday = weekdayLookup(Time.weekday());
 	tft.println(weekday);
-	tft.setCursor(TIMEDATE_START_H, (TIMEDATE_START_V + TIMEDATE_LINE_HEIGHT * 2));
+	tft.setCursor(TIMEDATE_START_H, (TIMEDATE_START_V + 46));
 	tft.println(String(Time.month()) + "/" + String(Time.day()) + "/" + String(Time.year()));
 
 	delay(500);
@@ -117,14 +127,32 @@ void loop(void) {
 // ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
 //
 
-void myHandler(const char *event, const char *data)
+void realtimeHandler(const char *event, const char *data)
 {
 	Serial.print("Got an event!");
 	Serial.print(event);
-	if (data)
-		Serial.println(data);
-	else
+	if (data) {
+		int length = strlen(data) + 1;
+		char dataCopy[length];
+		strcpy(dataCopy, data);
+		Serial.println(dataCopy);
+		JsonObject &root = jsonBuffer.parseObject(dataCopy);
+		if (!root.success())
+		{
+			Particle.publish("parseObject() failed");
+			return;
+		}
+
+		// Update JSON data into our display variables
+		temperature = root["temp"].asString();
+		temperature = String(temperature).substring(0,2);
+		weather_desc = root["main"].asString();
+		humidity = root["humidity"].asString();
+		wind = root["wind"].asString();
+	}
+	else {
 		Serial.println("NULL");
+	}
 	digitalWrite(blinkLed, HIGH);
 	delay(500);
 	digitalWrite(blinkLed, LOW);
@@ -150,10 +178,20 @@ void displayWeather()
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V);
 	tft.setTextSize(1);
 	tft.setFont(CALIBRI_48);
-	tft.println("92");
+	tft.print(temperature);
+	tft.setFont(CALIBRI_18);
+	tft.println(" F");
+	// tft.setCursor(WEATHER_START_H + 58, WEATHER_START_V);
+
 	tft.setFont(CALIBRI_24);
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 50);
-	tft.println("Sunny");
+	tft.println(weather_desc);
+
+	tft.setFont(CALIBRI_18);
+	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 76);
+	tft.println("Humidity " + humidity + "%");
+	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 96);
+	tft.println("Wind " + wind + "mph");
 }
 
 String weekdayLookup(int val) {
