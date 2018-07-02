@@ -116,12 +116,17 @@ void realtimeHandler(const char *event, const char *data)
 		if (!root.success())
 		{
 			Particle.publish("parseObject() failed");
+			Serial.println("parseObject() failed");
 			return;
 		}
 
 		// Update JSON data into our display variables
 		symbol = root["Symbol"].asString();
 		price = root["Price"].asString();
+		Serial.println("Current price " + price);
+
+		// Clear JSON buffer for reuse
+		jsonBuffer.clear();
 	}
 	else {
 		Serial.println("NULL");

@@ -149,6 +149,10 @@ void realtimeHandler(const char *event, const char *data)
 		weather_desc = root["main"].asString();
 		humidity = root["humidity"].asString();
 		wind = root["wind"].asString();
+		Serial.println("Current temp " + temperature);
+
+		// Clear JSON buffer for reuse
+		jsonBuffer.clear();
 	}
 	else {
 		Serial.println("NULL");
