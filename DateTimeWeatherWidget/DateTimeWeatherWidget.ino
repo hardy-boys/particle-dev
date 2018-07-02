@@ -145,7 +145,6 @@ void realtimeHandler(const char *event, const char *data)
 
 		// Update JSON data into our display variables
 		temperature = root["temp"].asString();
-		temperature = String(temperature).substring(0,2);
 		weather_desc = root["main"].asString();
 		humidity = root["humidity"].asString();
 		wind = root["wind"].asString();
