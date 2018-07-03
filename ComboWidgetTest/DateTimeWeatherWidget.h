@@ -10,11 +10,11 @@ struct DateTimeWeatherWidget
   // ─── CONTENT POSITIONING ────────────────────────────────────────────────────────
   //
   // Time/Date
-  #define TIMEDATE_START_V 80
-  #define TIMEDATE_START_H 180
+  const int TIMEDATE_START_V = 80;
+  const int TIMEDATE_START_H = 180;
   // Weather
-  #define WEATHER_START_V 80
-  #define WEATHER_START_H 36
+  const int WEATHER_START_V = 80;
+  const int WEATHER_START_H = 36;
 
   //
   // ─── GLOBAL VARIABLES ───────────────────────────────────────────────────────────

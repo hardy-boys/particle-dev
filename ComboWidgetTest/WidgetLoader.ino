@@ -116,17 +116,7 @@ int changeView(String viewID)
 
 void screenInit()
 {
-  // Sync time with particle cloud
-  Particle.syncTime();
-  waitUntil(Particle.syncTimeDone);
-
-  /***** Initial screen setup *****/
-  tft.begin();
-  tft.setRotation(1);
-  tft.fillScreen(ILI9341_WHITE);
-  tft.drawFastHLine(0, 50, 320, ILI9341_BLACK);
-  tft.drawFastVLine(60, 0, 50, ILI9341_BLACK);
-
+  
   // Switch header info based on widget
   if (widgetView == WIDGET1)
   {

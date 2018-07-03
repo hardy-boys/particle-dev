@@ -36,7 +36,8 @@ void DateTimeWeatherWidget::widget_setup()
 
 void DateTimeWeatherWidget::widget_loop()
 {
-	format_string = "%I:%M   %p";
+	tft.setTextWrap(false);
+	format_string = "%I:%M %p";
 
 	Time.zone(-5);
 	if (Time.isDST())
@@ -49,7 +50,7 @@ void DateTimeWeatherWidget::widget_loop()
 	}
 	current_time = Time.format(Time.now(), format_string);
 
-	DateTimeWeatherWidget::displayWeather();
+	displayWeather();
 	tft.setTextSize(1);
 	tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
 	tft.setCursor(TIMEDATE_START_H, TIMEDATE_START_V);
@@ -102,8 +103,20 @@ void DateTimeWeatherWidget::weatherHandler(const char *event, const char *data)
 
 void DateTimeWeatherWidget::screenInit()
 {
+	// Sync time with particle cloud
+	Particle.syncTime();
+	waitUntil(Particle.syncTimeDone);
+
+	/***** Initial screen setup *****/
+	tft.begin();
+	tft.setRotation(1);
+	tft.fillScreen(ILI9341_WHITE);
+	tft.drawFastHLine(0, 50, 320, ILI9341_BLACK);
+	tft.drawFastVLine(60, 0, 50, ILI9341_BLACK);
+
 	tft.setCursor(96, 12);
 	tft.setTextColor(ILI9341_BLACK);
+	tft.setTextWrap(false);
 	tft.setTextSize(1);
 	tft.setFont(CALIBRI_24);
 
