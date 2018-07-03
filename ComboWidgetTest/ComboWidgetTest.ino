@@ -28,8 +28,11 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(A2, A1, A0);
 // ─── GLOBAL VARIABLES ───────────────────────────────────────────────────────────
 //
 
-// Widget selector
+// Set starting widget
 int widgetView = TIMEWEATHERWIDGET;
+
+// Function declarations
+int changeView(String viewID);
 
 // Memory pool for JSON object tree.
 StaticJsonBuffer<200> jsonBuffer;
@@ -109,19 +112,14 @@ void setup() {
 	Particle.subscribe("openWeather", weatherHandler);
 	Particle.subscribe("stocks", stocksHandler);
 
-	// Sync time with particle cloud
-	Particle.syncTime();
-	waitUntil(Particle.syncTimeDone);
+	// Cloud functions
+	Particle.function("changeView", changeView);
 
+	// Hardware setup
 	pinMode(blinkLed, OUTPUT);
 
-	// Initial screen setup
-	tft.begin();
-	tft.setRotation(1);
-	tft.fillScreen(ILI9341_WHITE);
-
-	// Draw top header bar
-	drawHeader();
+	// Call initial screen setup
+	screenInit();
 }
 
 //
@@ -130,7 +128,7 @@ void setup() {
 
 void loop(void) {
 
-	if (widgetView = TIMEWEATHERWIDGET) {
+	if (widgetView == TIMEWEATHERWIDGET) {
 		format_string = "%I:%M   %p";
 
 		Time.zone(-5);
@@ -161,8 +159,7 @@ void loop(void) {
 		delay(500);
 	}
 
-	else if (widgetView = STOCKSWIDGET) {
-		// render just what changed (time)
+	else if (widgetView == STOCKSWIDGET) {
 		tft.setTextSize(1);
 		tft.setFont(CALIBRI_48);
 		tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
@@ -176,11 +173,37 @@ void loop(void) {
 
 		delay(500);
 	}
+
+	else {
+		// unrecognized widget ID
+		tft.setTextSize(1);
+		tft.setFont(CALIBRI_24);
+		tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
+		tft.setCursor(SYMBOL_START_H, SYMBOL_START_V);
+		tft.println("Unknown: " + widgetView);
+	}
 }
 
 //
 // ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
 //
+
+int changeView(String viewID) {
+	if (viewID == "TIMEWEATHERWIDGET") {
+		widgetView = TIMEWEATHERWIDGET;
+		screenInit();
+		return 0;
+	}
+	else if (viewID == "STOCKSWIDGET") {
+		widgetView = STOCKSWIDGET;
+		screenInit();
+		return 1;
+	}
+	else {
+		// nothing matched, return error code
+		return -1;
+	}
+}
 
 void weatherHandler(const char *event, const char *data)
 {
@@ -251,21 +274,30 @@ void stocksHandler(const char *event, const char *data)
 	digitalWrite(blinkLed, LOW);
 }
 
-void drawHeader()
+void screenInit()
 {
+	// Sync time with particle cloud
+	Particle.syncTime();
+	waitUntil(Particle.syncTimeDone);
+
+	// Initial screen setup
+	tft.begin();
+	tft.setRotation(1);
+	tft.fillScreen(ILI9341_WHITE);
+
+	/***** Draw Header *****/
 	// Don't edit these
-  tft.setCursor(96, 12);
+	tft.setCursor(96, 12);
   tft.setTextColor(ILI9341_BLACK);
   tft.setTextSize(1);
 	tft.setFont(CALIBRI_24);
 	tft.drawFastHLine(0, 50, 320, ILI9341_BLACK);
 	tft.drawFastVLine(60, 0, 50, ILI9341_BLACK);
-
 	// Edit here
-	if (widgetView = TIMEWEATHERWIDGET) {
+	if (widgetView == TIMEWEATHERWIDGET) {
 		tft.println("Time & Weather");
 		tft.drawBitmap(6, 0, weatherIcon, 48, 48, ILI9341_YELLOW);
-	} else if (widgetView = STOCKSWIDGET) {
+	} else if (widgetView == STOCKSWIDGET) {
 		tft.println("   Stock    Updates");
 		tft.drawBitmap(6, 0, stocksIcon, 48, 48, ILI9341_GREEN);
 	}
