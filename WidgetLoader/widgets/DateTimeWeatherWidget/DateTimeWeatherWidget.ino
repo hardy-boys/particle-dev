@@ -1,7 +1,7 @@
 #include "./DateTimeWeatherWidget.h"
 
 // Icons
-const unsigned char TIMEWEATHERWIDGET_icon[] = {
+const unsigned char weather_icon[] = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0,
 		0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x00,
 		0x03, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x60, 0x00, 0x00, 0x06, 0x00,
@@ -31,12 +31,11 @@ void DateTimeWeatherWidget::widget_setup()
 	Serial.println("Time-Weather widget loaded");
 
 	// Event listeners
-	Particle.subscribe("openWeather", [this](const char *a, const char *b) { weatherHandler(a, b); });
+	Particle.subscribe("openWeather", [this](const char *a, const char *b) { streamDataHandler(a, b); });
 }
 
 void DateTimeWeatherWidget::widget_loop()
 {
-	tft.setTextWrap(false);
 	format_string = "%I:%M %p";
 
 	Time.zone(-5);
@@ -65,9 +64,9 @@ void DateTimeWeatherWidget::widget_loop()
 	tft.println(String(Time.month()) + "/" + String(Time.day()) + "/" + String(Time.year()));
 }
 
-void DateTimeWeatherWidget::weatherHandler(const char *event, const char *data)
+void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *data)
 {
-	Serial.print("Got an event!");
+	Serial.print("Recieved event: ");
 	Serial.print(event);
 	if (data)
 	{
@@ -79,6 +78,7 @@ void DateTimeWeatherWidget::weatherHandler(const char *event, const char *data)
 		if (!root.success())
 		{
 			Particle.publish("parseObject() failed");
+			Serial.println("parseObject() failed");
 			return;
 		}
 
@@ -121,7 +121,7 @@ void DateTimeWeatherWidget::screenInit()
 	tft.setFont(CALIBRI_24);
 
 	tft.println("Time & Weather");
-	tft.drawBitmap(6, 0, TIMEWEATHERWIDGET_icon, 48, 48, ILI9341_YELLOW);
+	tft.drawBitmap(6, 0, weather_icon, 48, 48, ILI9341_YELLOW);
 }
 
 void DateTimeWeatherWidget::displayWeather()

@@ -1,7 +1,7 @@
 #ifndef DATETIMEWEATHERWIDGET_H
 #define DATETIMEWEATHERWIDGET_H
 
-#include "./WidgetLoader.h"
+#include "../../WidgetLoader.h"
 
 struct DateTimeWeatherWidget
 {
@@ -35,12 +35,12 @@ struct DateTimeWeatherWidget
   // ─── FUNCTION DECLARATIONS ──────────────────────────────────────────────────────
   //
 
-  void weatherHandler(const char *event, const char *data);
+  void widget_setup();
+  void widget_loop();
+  void streamDataHandler(const char *event, const char *data);
   void screenInit();
   void displayWeather();
   String weekdayLookup(int val);
-  void widget_setup();
-  void widget_loop();
 };
 
 #endif

@@ -1,9 +1,6 @@
 #include "./WidgetLoader.h"
-#include "./DateTimeWeatherWidget.h"
-
-//
-// ─── WIDGET INCLUDES ───────────────────────────────────────────────────────────────────
-//
+#include "./widgets/DateTimeWeatherWidget/DateTimeWeatherWidget.h"
+#include "./widgets/StocksWidget/StocksWidget.h"
 
 
 // Widget enums
@@ -13,13 +10,14 @@
 #define WIDGET4 4
 
 DateTimeWeatherWidget weather_widget;
+StocksWidget stocks_widget;
 
 //
 // ─── GLOBAL VARIABLES ───────────────────────────────────────────────────────────
 //
 
 // Set starting widget
-int widgetView = WIDGET1;
+int widgetView = WIDGET2;
 
 // Function declarations
 int changeView(String viewID);
@@ -52,7 +50,7 @@ void setup()
 
   else if (widgetView == WIDGET2)
   {
-    // other namespace
+    stocks_widget.widget_setup();
   }
 
   // Call initial screen setup
@@ -73,7 +71,7 @@ void loop(void)
 
   else if (widgetView == WIDGET2)
   {
-    // other namespace
+    stocks_widget.widget_loop();
   }
 
   else
@@ -124,7 +122,7 @@ void screenInit()
   }
   else if (widgetView == WIDGET2)
   {
-    // etc
+    stocks_widget.screenInit();
   }
 }
 
