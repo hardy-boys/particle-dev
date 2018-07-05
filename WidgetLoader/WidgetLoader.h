@@ -12,7 +12,7 @@
 static Adafruit_ILI9341 tft = Adafruit_ILI9341(A2, A1, A0);
 
 // Memory pool for JSON object tree.
-static StaticJsonBuffer<200> jsonBuffer;
+static StaticJsonBuffer<1024> jsonBuffer;
 
 // Hardware specific
 static int blinkLed = D7;

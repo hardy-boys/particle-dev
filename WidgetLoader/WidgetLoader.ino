@@ -4,10 +4,8 @@
 
 
 // Widget enums
-#define WIDGET1 1
-#define WIDGET2 2
-#define WIDGET3 3
-#define WIDGET4 4
+#define WEATHERWIDGET 1
+#define STOCKSWIDGET 2
 
 DateTimeWeatherWidget weather_widget;
 StocksWidget stocks_widget;
@@ -17,7 +15,7 @@ StocksWidget stocks_widget;
 //
 
 // Set starting widget
-int widgetView = WIDGET2;
+int widgetView = STOCKSWIDGET;
 
 // Function declarations
 int changeView(String viewID);
@@ -43,12 +41,12 @@ void setup()
   pinMode(blinkLed, OUTPUT);
 
   /***** Widget Setup *****/
-  if (widgetView == WIDGET1)
+  if (widgetView == WEATHERWIDGET)
   {
     weather_widget.widget_setup();
   }
 
-  else if (widgetView == WIDGET2)
+  else if (widgetView == STOCKSWIDGET)
   {
     stocks_widget.widget_setup();
   }
@@ -64,12 +62,12 @@ void setup()
 void loop(void)
 {
 
-  if (widgetView == WIDGET1)
+  if (widgetView == WEATHERWIDGET)
   {
     weather_widget.widget_loop();
   }
 
-  else if (widgetView == WIDGET2)
+  else if (widgetView == STOCKSWIDGET)
   {
     stocks_widget.widget_loop();
   }
@@ -93,15 +91,17 @@ void loop(void)
 
 int changeView(String viewID)
 {
-  if (viewID == "WIDGET1")
+  if (viewID == "WEATHERWIDGET")
   {
-    widgetView = WIDGET1;
+    widgetView = WEATHERWIDGET;
+    weather_widget.widget_setup();
     screenInit();
     return 0;
   }
-  else if (viewID == "WIDGET2")
+  else if (viewID == "STOCKSWIDGET")
   {
-    widgetView = WIDGET2;
+    widgetView = STOCKSWIDGET;
+    stocks_widget.widget_setup();
     screenInit();
     return 1;
   }
@@ -116,11 +116,11 @@ void screenInit()
 {
   
   // Switch header info based on widget
-  if (widgetView == WIDGET1)
+  if (widgetView == WEATHERWIDGET)
   {
     weather_widget.screenInit();
   }
-  else if (widgetView == WIDGET2)
+  else if (widgetView == STOCKSWIDGET)
   {
     stocks_widget.screenInit();
   }

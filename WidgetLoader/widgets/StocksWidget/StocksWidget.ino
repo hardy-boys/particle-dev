@@ -36,17 +36,27 @@ void StocksWidget::widget_setup()
 
 void StocksWidget::widget_loop()
 {
-	// render just what changed (time)
 	tft.setTextSize(1);
-	tft.setFont(CALIBRI_48);
+	tft.setFont(CALIBRI_18);
 	tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
 
-	// Stock symbol
+	// Stock symbols & prices
 	tft.setCursor(SYMBOL_START_H, SYMBOL_START_V);
-	tft.println(symbol);
-	// Stock price
+	tft.println(symbol_1);
 	tft.setCursor(PRICE_START_H, PRICE_START_V);
-	tft.println(price);
+	tft.println(price_1);
+	tft.setCursor(SYMBOL_START_H, SYMBOL_START_V + 24 * 1);
+	tft.println(symbol_2);
+	tft.setCursor(PRICE_START_H, PRICE_START_V + 24 * 1);
+	tft.println(price_2);
+	tft.setCursor(SYMBOL_START_H, SYMBOL_START_V + 24 * 2);
+	tft.println(symbol_3);
+	tft.setCursor(PRICE_START_H, PRICE_START_V + 24 * 2);
+	tft.println(price_3);
+	tft.setCursor(SYMBOL_START_H, SYMBOL_START_V + 24 * 3);
+	tft.println(symbol_4);
+	tft.setCursor(PRICE_START_H, PRICE_START_V + 24 * 3);
+	tft.println(price_4);
 
 }
 
@@ -60,18 +70,25 @@ void StocksWidget::streamDataHandler(const char *event, const char *data)
 		char dataCopy[length];
 		strcpy(dataCopy, data);
 		Serial.println(dataCopy);
-		JsonObject &root = jsonBuffer.parseObject(dataCopy);
+		JsonArray &root = jsonBuffer.parseArray(dataCopy);
 		if (!root.success())
 		{
-			Particle.publish("parseObject() failed");
-			Serial.println("parseObject() failed");
+			Particle.publish("parseArray() failed");
+			Serial.println("parseArray() failed");
 			return;
 		}
 
 		// Update JSON data into our display variables
-		symbol = root["Symbol"].asString();
-		price = root["Price"].asString();
-		Serial.println("Current price " + price);
+		symbol_1 = root[0]["Symbol"].asString();
+		price_1 = root[0]["Price"].asString();
+		symbol_2 = root[1]["Symbol"].asString();
+		price_2 = root[1]["Price"].asString();
+		symbol_3 = root[2]["Symbol"].asString();
+		price_3 = root[2]["Price"].asString();
+		symbol_4 = root[3]["Symbol"].asString();
+		price_4 = root[3]["Price"].asString();
+
+		Serial.println("Prices updated");
 
 		// Clear JSON buffer for reuse
 		jsonBuffer.clear();
