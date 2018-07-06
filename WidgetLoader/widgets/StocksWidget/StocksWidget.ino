@@ -62,6 +62,9 @@ void StocksWidget::widget_loop()
 
 void StocksWidget::streamDataHandler(const char *event, const char *data)
 {
+	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
+	static StaticJsonBuffer<1024> jsonBuffer;
+
 	Serial.print("Recieved event: ");
 	Serial.print(event);
 	if (data)
@@ -89,9 +92,6 @@ void StocksWidget::streamDataHandler(const char *event, const char *data)
 		price_4 = root[3]["Price"].asString();
 
 		Serial.println("Prices updated");
-
-		// Clear JSON buffer for reuse
-		jsonBuffer.clear();
 	}
 	else
 	{

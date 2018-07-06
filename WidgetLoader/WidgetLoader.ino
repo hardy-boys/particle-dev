@@ -2,13 +2,33 @@
 #include "./widgets/DateTimeWeatherWidget/DateTimeWeatherWidget.h"
 #include "./widgets/StocksWidget/StocksWidget.h"
 
+//
+// ─── WIDGET SETUP ───────────────────────────────────────────────────────────────
+//
 
 // Widget enums
-#define WEATHERWIDGET 1
+#define TIMEWEATHERWIDGET 1
 #define STOCKSWIDGET 2
 
+// Widget objects
 DateTimeWeatherWidget weather_widget;
 StocksWidget stocks_widget;
+
+// Widget setup selector
+void widgetSetup(int widgetEnum) {
+  switch (widgetEnum)
+  {
+  case TIMEWEATHERWIDGET:
+    weather_widget.widget_setup();
+    break;
+  case STOCKSWIDGET:
+    stocks_widget.widget_setup();
+    break;
+  default:
+    Serial.println("Invalid widget enum used for setup");
+    break;
+  }
+}
 
 //
 // ─── GLOBAL VARIABLES ───────────────────────────────────────────────────────────
@@ -18,7 +38,8 @@ StocksWidget stocks_widget;
 int widgetView = STOCKSWIDGET;
 
 // Function declarations
-int changeView(String viewID);
+int setProfile(String widgets);
+int changeView(String viewID);  // allow for manual view changes
 
 //
 // ─── DEVICE SETUP ──────────────────────────────────────────────────────────────────────
@@ -35,20 +56,43 @@ void setup()
   Serial.println("Hello World!");
 
   // Cloud functions
+  Particle.function("setProfile", setProfile);
   Particle.function("changeView", changeView);
 
   // Hardware setup
   pinMode(blinkLed, OUTPUT);
 
   /***** Widget Setup *****/
-  if (widgetView == WEATHERWIDGET)
-  {
-    weather_widget.widget_setup();
+
+  // Load default active profile
+  ProfileStruct data;
+  int addr = 0;
+  EEPROM.get(addr, data);
+  Serial.printlnf("Loaded from EEPROM: addr=%d, profile_1=%d profile_2=%d profile_3=%d, profile_4=%d, sizeof(data)=%d",
+                  addr, data.profile_1, data.profile_2, data.profile_3, data.profile_4, sizeof(data));
+  // If the EEPROM profiles appear uninitialized, flash default profile:
+  if (data.profile_1 == -1 && data.profile_2 == -1 && data.profile_3 == -1 && data.profile_4 == -1) {
+    data.profile_1 = TIMEWEATHERWIDGET;
+    EEPROM.put(addr, data);
+    Serial.println("Saved default profile to EEPROM");
   }
 
-  else if (widgetView == STOCKSWIDGET)
+  // Go through each profile and initialize if defined
+  if (data.profile_1 != -1)
   {
-    stocks_widget.widget_setup();
+    widgetSetup(data.profile_1);
+  }
+  if (data.profile_2 != -1)
+  {
+    widgetSetup(data.profile_2);
+  }
+  if (data.profile_3 != -1)
+  {
+    widgetSetup(data.profile_3);
+  }
+  if (data.profile_4 != -1)
+  {
+    widgetSetup(data.profile_4);
   }
 
   // Call initial screen setup
@@ -62,7 +106,7 @@ void setup()
 void loop(void)
 {
 
-  if (widgetView == WEATHERWIDGET)
+  if (widgetView == TIMEWEATHERWIDGET)
   {
     weather_widget.widget_loop();
   }
@@ -89,19 +133,26 @@ void loop(void)
 // ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
 //
 
+int setProfile(String widgets)
+{
+  static StaticJsonBuffer<1024> jsonBuffer;
+  ProfileStruct data;
+  
+
+  return 1;
+}
+
 int changeView(String viewID)
 {
-  if (viewID == "WEATHERWIDGET")
+  if (viewID == "TIMEWEATHERWIDGET")
   {
-    widgetView = WEATHERWIDGET;
-    weather_widget.widget_setup();
+    widgetView = TIMEWEATHERWIDGET;
     screenInit();
     return 0;
   }
   else if (viewID == "STOCKSWIDGET")
   {
     widgetView = STOCKSWIDGET;
-    stocks_widget.widget_setup();
     screenInit();
     return 1;
   }
@@ -116,7 +167,7 @@ void screenInit()
 {
   
   // Switch header info based on widget
-  if (widgetView == WEATHERWIDGET)
+  if (widgetView == TIMEWEATHERWIDGET)
   {
     weather_widget.screenInit();
   }

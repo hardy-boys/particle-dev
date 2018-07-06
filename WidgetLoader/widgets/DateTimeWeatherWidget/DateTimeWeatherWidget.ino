@@ -66,6 +66,9 @@ void DateTimeWeatherWidget::widget_loop()
 
 void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *data)
 {
+	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
+	static StaticJsonBuffer<1024> jsonBuffer;
+
 	Serial.print("Recieved event: ");
 	Serial.print(event);
 	if (data)
@@ -83,14 +86,12 @@ void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *dat
 		}
 
 		// Update JSON data into our display variables
+		name = root["name"].asString();
 		temperature = root["temp"].asString();
 		weather_desc = root["main"].asString();
 		humidity = root["humidity"].asString();
 		wind = root["wind"].asString();
 		Serial.println("Current temp " + temperature);
-
-		// Clear JSON buffer for reuse
-		jsonBuffer.clear();
 	}
 	else
 	{
@@ -126,6 +127,7 @@ void DateTimeWeatherWidget::screenInit()
 
 void DateTimeWeatherWidget::displayWeather()
 {
+	
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V);
 	tft.setTextSize(1);
 	tft.setFont(CALIBRI_48);
@@ -142,6 +144,8 @@ void DateTimeWeatherWidget::displayWeather()
 	tft.println("Humidity " + humidity + "%");
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 96);
 	tft.println("Wind " + wind + "mph");
+	tft.setCursor(WEATHER_START_H, WEATHER_START_V - 22);
+	tft.println(name);
 }
 
 String DateTimeWeatherWidget::weekdayLookup(int val)

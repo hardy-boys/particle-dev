@@ -21,6 +21,7 @@ struct DateTimeWeatherWidget
   //
 
   // Time/Weather
+  String name = "...";
   String temperature = "...";
   String weather_desc = "...";
   String humidity = "...";
