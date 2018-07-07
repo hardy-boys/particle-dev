@@ -72,7 +72,7 @@ void DateTimeWeatherWidget::widget_loop()
 void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *data)
 {
 	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
-	static StaticJsonBuffer<1024> jsonBuffer;
+	StaticJsonBuffer<1024> jsonBuffer;
 
 	Serial.print("Recieved event: ");
 	Serial.println(event);
@@ -143,14 +143,14 @@ void DateTimeWeatherWidget::displayWeather()
 	tft.setFont(CALIBRI_18);
 	tft.println(" F");
 
-	tft.setFont(CALIBRI_24);
+	tft.setFont(CALIBRI_18);
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 50);
 	tft.println(weather_desc);
 
 	tft.setFont(CALIBRI_18);
-	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 76);
+	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 70);
 	tft.println("Humidity " + humidity + "%");
-	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 96);
+	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 90);
 	tft.println("Wind " + wind + "mph");
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V - 22);
 	tft.println(name);
