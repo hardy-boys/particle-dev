@@ -23,7 +23,7 @@ const unsigned char weather_icon[] = {
 };
 
 //
-// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+// ───  SETUP AND LOOP ─────────────────────────────────────────────────────────────
 //
 
 void DateTimeWeatherWidget::widget_setup()
@@ -64,15 +64,24 @@ void DateTimeWeatherWidget::widget_loop()
 	tft.println(String(Time.month()) + "/" + String(Time.day()) + "/" + String(Time.year()));
 }
 
+//
+// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+//
+
+
 void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *data)
 {
+	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
+	static StaticJsonBuffer<1024> jsonBuffer;
+
 	Serial.print("Recieved event: ");
-	Serial.print(event);
+	Serial.println(event);
 	if (data)
 	{
 		int length = strlen(data) + 1;
 		char dataCopy[length];
 		strcpy(dataCopy, data);
+		Serial.print("Recieved data: ");
 		Serial.println(dataCopy);
 		JsonObject &root = jsonBuffer.parseObject(dataCopy);
 		if (!root.success())
@@ -83,14 +92,12 @@ void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *dat
 		}
 
 		// Update JSON data into our display variables
+		name = root["name"].asString();
 		temperature = root["temp"].asString();
 		weather_desc = root["main"].asString();
 		humidity = root["humidity"].asString();
 		wind = root["wind"].asString();
 		Serial.println("Current temp " + temperature);
-
-		// Clear JSON buffer for reuse
-		jsonBuffer.clear();
 	}
 	else
 	{
@@ -103,6 +110,8 @@ void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *dat
 
 void DateTimeWeatherWidget::screenInit()
 {
+	Serial.println("Rendering DateTimeWeatherWidget");
+
 	// Sync time with particle cloud
 	Particle.syncTime();
 	waitUntil(Particle.syncTimeDone);
@@ -126,6 +135,7 @@ void DateTimeWeatherWidget::screenInit()
 
 void DateTimeWeatherWidget::displayWeather()
 {
+	
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V);
 	tft.setTextSize(1);
 	tft.setFont(CALIBRI_48);
@@ -142,6 +152,8 @@ void DateTimeWeatherWidget::displayWeather()
 	tft.println("Humidity " + humidity + "%");
 	tft.setCursor(WEATHER_START_H, WEATHER_START_V + 96);
 	tft.println("Wind " + wind + "mph");
+	tft.setCursor(WEATHER_START_H, WEATHER_START_V - 22);
+	tft.println(name);
 }
 
 String DateTimeWeatherWidget::weekdayLookup(int val)

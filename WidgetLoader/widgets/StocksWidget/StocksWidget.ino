@@ -23,7 +23,7 @@ const unsigned char stocks_icon[] = {
 };
 
 //
-// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+// ───  SETUP AND LOOP ─────────────────────────────────────────────────────────────
 //
 
 void StocksWidget::widget_setup()
@@ -60,15 +60,23 @@ void StocksWidget::widget_loop()
 
 }
 
+//
+// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+//
+
 void StocksWidget::streamDataHandler(const char *event, const char *data)
 {
+	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
+	static StaticJsonBuffer<1024> jsonBuffer;
+
 	Serial.print("Recieved event: ");
-	Serial.print(event);
+	Serial.println(event);
 	if (data)
 	{
 		int length = strlen(data) + 1;
 		char dataCopy[length];
 		strcpy(dataCopy, data);
+		Serial.print("Recieved data: ");
 		Serial.println(dataCopy);
 		JsonArray &root = jsonBuffer.parseArray(dataCopy);
 		if (!root.success())
@@ -89,9 +97,6 @@ void StocksWidget::streamDataHandler(const char *event, const char *data)
 		price_4 = root[3]["Price"].asString();
 
 		Serial.println("Prices updated");
-
-		// Clear JSON buffer for reuse
-		jsonBuffer.clear();
 	}
 	else
 	{
@@ -104,6 +109,8 @@ void StocksWidget::streamDataHandler(const char *event, const char *data)
 
 void StocksWidget::screenInit()
 {
+	Serial.println("Rendering StocksWidget");
+
 	// Sync time with particle cloud
 	Particle.syncTime();
 	waitUntil(Particle.syncTimeDone);
