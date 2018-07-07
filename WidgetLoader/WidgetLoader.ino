@@ -63,6 +63,10 @@ int widgetView;
 int setProfile(String widgets);
 int changeView(String viewID);  // allow for manual view changes
 
+// Timers
+Timer reset_timer(3000, reset_device, true);
+bool device_reset = false;
+
 //
 // ─── DEVICE SETUP ──────────────────────────────────────────────────────────────────────
 //
@@ -151,6 +155,11 @@ void loop()
     break;
   }
 
+  // Do resets in the loop to avoid faults
+  if (device_reset) {
+    System.reset();
+  }
+
   // loop interval
   delay(500);
 }
@@ -176,7 +185,7 @@ void screenInit()
 
 int setProfile(String profileData)
 {
-  static StaticJsonBuffer<1024> jsonBuffer;
+  StaticJsonBuffer<1024> jsonBuffer;
 
   int length = profileData.length() + 1;
   char dataCopy[length];
@@ -226,9 +235,16 @@ int setProfile(String profileData)
       addr, data.widget_1, data.widget_2, data.widget_3, data.widget_4, data.switchMode, sizeof(data));
 
   // restart the device to set up the new profile
-  System.reset();
+  reset_timer.start();
+  Serial.println("System will restart in 3 seconds with new profile...");
 
   return 1;
+}
+
+void reset_device() {
+  // callback function to be used with timer
+  Serial.println("Restarting...");
+  device_reset = true;
 }
 
 int changeView(String widgetName)
