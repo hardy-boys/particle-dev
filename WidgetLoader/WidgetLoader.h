@@ -11,14 +11,16 @@
 // Screen object
 static Adafruit_ILI9341 tft = Adafruit_ILI9341(A2, A1, A0);
 
+
 // Profile object with defaults.  We limit to four active profiles
 // due to device limitations (max 4 event listeners)
 typedef struct
 {
-  int profile_1;
-  int profile_2;
-  int profile_3;
-  int profile_4;
+  int widget_1;
+  int widget_2;
+  int widget_3;
+  int widget_4;
+  int switchMode;
 } ProfileStruct;
 
 // Hardware specific

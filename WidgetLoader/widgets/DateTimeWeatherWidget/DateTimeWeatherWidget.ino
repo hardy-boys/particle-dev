@@ -23,7 +23,7 @@ const unsigned char weather_icon[] = {
 };
 
 //
-// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+// ───  SETUP AND LOOP ─────────────────────────────────────────────────────────────
 //
 
 void DateTimeWeatherWidget::widget_setup()
@@ -64,18 +64,24 @@ void DateTimeWeatherWidget::widget_loop()
 	tft.println(String(Time.month()) + "/" + String(Time.day()) + "/" + String(Time.year()));
 }
 
+//
+// ─── UTIL FUNCTIONS ─────────────────────────────────────────────────────────────
+//
+
+
 void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *data)
 {
 	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
 	static StaticJsonBuffer<1024> jsonBuffer;
 
 	Serial.print("Recieved event: ");
-	Serial.print(event);
+	Serial.println(event);
 	if (data)
 	{
 		int length = strlen(data) + 1;
 		char dataCopy[length];
 		strcpy(dataCopy, data);
+		Serial.print("Recieved data: ");
 		Serial.println(dataCopy);
 		JsonObject &root = jsonBuffer.parseObject(dataCopy);
 		if (!root.success())
@@ -104,6 +110,8 @@ void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *dat
 
 void DateTimeWeatherWidget::screenInit()
 {
+	Serial.println("Rendering DateTimeWeatherWidget");
+
 	// Sync time with particle cloud
 	Particle.syncTime();
 	waitUntil(Particle.syncTimeDone);
