@@ -26,7 +26,7 @@ TrafficWidget traffic_widget;
 NewsWidget news_widget;
 
 // Active widgets for slideshow loop
-int active_widgets[4] = {0, 0, 0, 0};
+int active_widgets[4] = {-1, -1, -1, -1};
 int loop_position = 1;
 
 // Widget setup selector
@@ -299,10 +299,10 @@ void reset_device() {
 
 void slideshow_loop(){
   // loop back to beginning
-  if (loop_position > 3) {
+  if (loop_position > 3 || active_widgets[loop_position] == -1) {
     loop_position = 0;
   }
-  int widget_no = loop_position + 1;
+  int widget_no = active_widgets[loop_position];
     switch (widget_no)
     {
     case DATETIMEWEATHERWIDGET:
@@ -330,6 +330,7 @@ void localChangeView(int widgetEnum){
   screen_updating = true;
   widgetView = widgetEnum;
   screenInit();
+  delay(50);
   screen_updating = false;
 }
 
