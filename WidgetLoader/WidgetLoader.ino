@@ -2,6 +2,7 @@
 #include "./widgets/DateTimeWeatherWidget/DateTimeWeatherWidget.h"
 #include "./widgets/StocksWidget/StocksWidget.h"
 #include "./widgets/TrafficWidget/TrafficWidget.h"
+#include "./widgets/NewsWidget/NewsWidget.h"
 
 //
 // ─── WIDGET SETUP ───────────────────────────────────────────────────────────────
@@ -11,6 +12,7 @@
 #define DATETIMEWEATHERWIDGET 1
 #define STOCKSWIDGET 2
 #define TRAFFICWIDGET 3
+#define NEWSWIDGET 4
 
 // Switch modes
 #define MANUAL 1
@@ -21,6 +23,7 @@
 DateTimeWeatherWidget weather_widget;
 StocksWidget stocks_widget;
 TrafficWidget traffic_widget;
+NewsWidget news_widget;
 
 // Widget setup selector
 void widgetSetup(int widgetEnum) {
@@ -34,6 +37,9 @@ void widgetSetup(int widgetEnum) {
     break;
   case TRAFFICWIDGET:
     traffic_widget.widget_setup();
+    break;
+  case NEWSWIDGET:
+    news_widget.widget_setup();
     break;
   default:
     Serial.println("Invalid widget enum used for setup");
@@ -54,6 +60,10 @@ int widgetNameToEnum(String widgetName) {
   else if (widgetName == "TrafficWidget")
   {
     return TRAFFICWIDGET;
+  }
+  else if (widgetName == "NewsWidget")
+  {
+    return NEWSWIDGET;
   }
   else
   {
@@ -157,6 +167,9 @@ void loop()
   case TRAFFICWIDGET:
     traffic_widget.widget_loop();
     break;
+  case NEWSWIDGET:
+    news_widget.widget_loop();
+    break;
   default:
     // unrecognized widget ID
     Serial.println("Invalid widget enum used for loop");
@@ -193,6 +206,9 @@ void screenInit()
     break;
   case TRAFFICWIDGET:
     traffic_widget.screenInit();
+    break;
+  case NEWSWIDGET:
+    news_widget.screenInit();
     break;
   default:
     break;
