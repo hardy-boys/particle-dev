@@ -1,6 +1,8 @@
 #include "./WidgetLoader.h"
 #include "./widgets/DateTimeWeatherWidget/DateTimeWeatherWidget.h"
 #include "./widgets/StocksWidget/StocksWidget.h"
+#include "./widgets/TrafficWidget/TrafficWidget.h"
+#include "./widgets/NewsWidget/NewsWidget.h"
 
 //
 // ─── WIDGET SETUP ───────────────────────────────────────────────────────────────
@@ -9,6 +11,8 @@
 // Widget enums
 #define DATETIMEWEATHERWIDGET 1
 #define STOCKSWIDGET 2
+#define TRAFFICWIDGET 3
+#define NEWSWIDGET 4
 
 // Switch modes
 #define MANUAL 1
@@ -18,6 +22,12 @@
 // Widget objects
 DateTimeWeatherWidget weather_widget;
 StocksWidget stocks_widget;
+TrafficWidget traffic_widget;
+NewsWidget news_widget;
+
+// Active widgets for slideshow loop
+int active_widgets[4] = {0, 0, 0, 0};
+int loop_position = 1;
 
 // Widget setup selector
 void widgetSetup(int widgetEnum) {
@@ -28,6 +38,12 @@ void widgetSetup(int widgetEnum) {
     break;
   case STOCKSWIDGET:
     stocks_widget.widget_setup();
+    break;
+  case TRAFFICWIDGET:
+    traffic_widget.widget_setup();
+    break;
+  case NEWSWIDGET:
+    news_widget.widget_setup();
     break;
   default:
     Serial.println("Invalid widget enum used for setup");
@@ -45,6 +61,14 @@ int widgetNameToEnum(String widgetName) {
   {
     return STOCKSWIDGET;
   }
+  else if (widgetName == "TrafficWidget")
+  {
+    return TRAFFICWIDGET;
+  }
+  else if (widgetName == "NewsWidget")
+  {
+    return NEWSWIDGET;
+  }
   else
   {
     // nothing matched, return empty widget enum
@@ -58,6 +82,7 @@ int widgetNameToEnum(String widgetName) {
 
 // Currently shown widget
 int widgetView;
+bool screen_updating = false;
 
 // Function declarations
 int setProfile(String widgets);
@@ -66,6 +91,7 @@ int changeView(String viewID);  // allow for manual view changes
 // Timers
 Timer reset_timer(3000, reset_device, true);
 bool device_reset = false;
+Timer slideshow_timer(5000, slideshow_loop);
 
 //
 // ─── DEVICE SETUP ──────────────────────────────────────────────────────────────────────
@@ -112,21 +138,31 @@ void setup()
   if (data.widget_1 != -1)
   {
     widgetSetup(data.widget_1);
+    active_widgets[0] = data.widget_1;
   }
   if (data.widget_2 != -1)
   {
     widgetSetup(data.widget_2);
+    active_widgets[1] = data.widget_2;
   }
   if (data.widget_3 != -1)
   {
     widgetSetup(data.widget_3);
+    active_widgets[2] = data.widget_3;
   }
   if (data.widget_4 != -1)
   {
     widgetSetup(data.widget_4);
+    active_widgets[3] = data.widget_4;
   }
 
-  // Call initial screen setup
+  // Start slideshow timer
+  slideshow_timer.start();
+
+  // // Special one-time screen setup calls
+  // tft.begin();
+  // tft.setRotation(1);
+  // Call widget specific screen setup
   screenInit();
 }
 
@@ -136,28 +172,36 @@ void setup()
 
 void loop()
 {
-  switch (widgetView)
-  {
-  case DATETIMEWEATHERWIDGET:
-    weather_widget.widget_loop();
-    break;
-  case STOCKSWIDGET:
-    stocks_widget.widget_loop();
-    break;
-  default:
-    // unrecognized widget ID
-    Serial.println("Invalid widget enum used for loop");
-    tft.setTextSize(1);
-    tft.setFont(CALIBRI_24);
-    tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
-    tft.setCursor(112, 72);
-    tft.println("Err Unknown");
-    break;
-  }
+  if(!screen_updating){
+    switch (widgetView)
+    {
+    case DATETIMEWEATHERWIDGET:
+      weather_widget.widget_loop();
+      break;
+    case STOCKSWIDGET:
+      stocks_widget.widget_loop();
+      break;
+    case TRAFFICWIDGET:
+      traffic_widget.widget_loop();
+      break;
+    case NEWSWIDGET:
+      news_widget.widget_loop();
+      break;
+    default:
+      // unrecognized widget ID
+      Serial.println("Invalid widget enum used for loop");
+      tft.setTextSize(1);
+      tft.setFont(CALIBRI_24);
+      tft.setTextColor(ILI9341_BLACK, ILI9341_WHITE);
+      tft.setCursor(112, 72);
+      tft.println("Err Unknown");
+      break;
+    }
 
-  // Do resets in the loop to avoid faults
-  if (device_reset) {
-    System.reset();
+    // Do resets in the loop to avoid faults
+    if (device_reset) {
+      System.reset();
+    }
   }
 
   // loop interval
@@ -177,6 +221,12 @@ void screenInit()
     break;
   case STOCKSWIDGET:
     stocks_widget.screenInit();
+    break;
+  case TRAFFICWIDGET:
+    traffic_widget.screenInit();
+    break;
+  case NEWSWIDGET:
+    news_widget.screenInit();
     break;
   default:
     break;
@@ -245,6 +295,42 @@ void reset_device() {
   // callback function to be used with timer
   Serial.println("Restarting...");
   device_reset = true;
+}
+
+void slideshow_loop(){
+  // loop back to beginning
+  if (loop_position > 3) {
+    loop_position = 0;
+  }
+  int widget_no = loop_position + 1;
+    switch (widget_no)
+    {
+    case DATETIMEWEATHERWIDGET:
+      localChangeView(DATETIMEWEATHERWIDGET);
+      break;
+    case STOCKSWIDGET:
+      localChangeView(STOCKSWIDGET);
+      break;
+    case TRAFFICWIDGET:
+      localChangeView(TRAFFICWIDGET);
+      break;
+    case NEWSWIDGET:
+      localChangeView(NEWSWIDGET);
+      break;
+    default:
+      Serial.println("Invalid widget enum used for loop");
+      break;
+    }
+
+    loop_position++;
+}
+
+void localChangeView(int widgetEnum){
+  // don't try to draw yet!  might corrupt the display while redrawing
+  screen_updating = true;
+  widgetView = widgetEnum;
+  screenInit();
+  screen_updating = false;
 }
 
 int changeView(String widgetName)
