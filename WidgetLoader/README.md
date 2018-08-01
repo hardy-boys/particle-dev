@@ -1,32 +1,32 @@
-# DateTimeWeatherWidget
+# Particle IoT Widget Loader
 
-A Particle project named DateTimeWeatherWidget
+This is a widget loading system developed to run all of the device-side Particle Photon code for [Hardy-Bot](https://github.com/hardy-boys/hardy-bot).
 
-## Welcome to your project!
+Documentation for Particle development can be found here: [https://docs.particle.io/reference/firmware/photon/](https://docs.particle.io/reference/firmware/photon/)
 
-Every new Particle project is composed of 3 important elements that you'll see have been created in your project directory for DateTimeWeatherWidget.
+## Widget Loader
 
-#### ```/src``` folder:  
-This is the source folder that contains the firmware files for your project. It should *not* be renamed. 
-Anything that is in this folder when you compile your project will be sent to our compile service and compiled into a firmware binary for the Particle device that you have targeted.
+#### ```setup()``` :  
+This setup function is run on device startup, once the firmware has loaded.  Here we initialize serial connections, Particle cloud functions, initialize the display, and load the  currently selected profile from the EEPROM.
 
-If your application contains multiple files, they should all be included in the `src` folder. If your firmware depends on Particle libraries, those dependencies are specified in the `project.properties` file referenced below.
+#### ```.loop()```:
+This is the main loop that runs as long as the device is powered on.  In this top level loop we are just selecting which widget-specific display loop to run based on the currently active widget.
 
-#### ```.ino``` file:
-This file is the firmware that will run as the primary application on your Particle device. It contains a `setup()` and `loop()` function, and can be written in Wiring or C/C++. For more information about using the Particle firmware API to create firmware for your Particle device, refer to the [Firmware Reference](https://docs.particle.io/reference/firmware/) section of the Particle documentation.
+#### ```setProfile(String profileData)```:  
+This function accepts profile data sent from our server and loads it onto the device EEPROM.
 
-#### ```project.properties``` file:  
-This is the file that specifies the name and version number of the libraries that your project depends on. Dependencies are added automatically to your `project.properties` file when you add a library to a project using the `particle library add` command in the CLI or add a library in the Desktop IDE.
+## Widgets
 
-## Adding additional files to your project
+#### ```widget_setup()``` : 
+Widget specifc setup.  All we do here is initialize an event listener to a particle event source for widget data events on the server.
 
-#### Projects with multiple sources
-If you would like add additional files to your application, they should be added to the `/src` folder. All files in the `/src` folder will be sent to the Particle Cloud to produce a compiled binary.
+#### ```widget_loop()``` : 
+Main widget loop.  Basically just drawing to the screen based on what widget data needs to be displayed.
 
-#### Projects with external libraries
-If your project includes a library that has not been registered in the Particle libraries system, you should create a new folder named `/lib/<libraryname>/src` under `/<project dir>` and add the `.h` and `.cpp` files for your library there. All contents of the `/lib` folder and subfolders will also be sent to the Cloud for compilation.
+#### ```streamDataHandler(const char *event, const char *data)``` :
+This is where Particle cloud events get handled.  A JSON buffer is allocated and used to parse the incoming data structure before updating widget variables.
 
-## Compiling your project
+## Compiling Particle projects
 
 When you're ready to compile your project, make sure you have the correct Particle device target selected and run `particle compile <platform>` in the CLI or click the Compile button in the Desktop IDE. The following files in your project folder will be sent to the compile service:
 
