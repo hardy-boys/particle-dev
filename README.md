@@ -1,2 +1,2 @@
 # particle-dev
-Development code sharing for Particle IoT
+A repo for Particle IoT C++ Development
