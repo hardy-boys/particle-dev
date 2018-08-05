@@ -72,7 +72,7 @@ void DateTimeWeatherWidget::widget_loop()
 void DateTimeWeatherWidget::streamDataHandler(const char *event, const char *data)
 {
 	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
-	StaticJsonBuffer<1024> jsonBuffer;
+	StaticJsonBuffer<256> jsonBuffer;
 
 	Serial.print("Recieved event: ");
 	Serial.println(event);

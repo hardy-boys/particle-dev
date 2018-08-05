@@ -67,7 +67,7 @@ void StocksWidget::widget_loop()
 void StocksWidget::streamDataHandler(const char *event, const char *data)
 {
 	// Allocate buffer for handling JSON, automatically destoyed after this handler finishes
-	StaticJsonBuffer<1024> jsonBuffer;
+	StaticJsonBuffer<512> jsonBuffer;
 
 	Serial.print("Recieved event: ");
 	Serial.println(event);
